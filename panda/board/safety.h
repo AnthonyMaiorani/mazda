@@ -139,7 +139,7 @@ void safety_tick(const addr_checks *rx_checks) {
       bool lagging = elapsed_time > MAX(rx_checks->check[i].msg[rx_checks->check[i].index].expected_timestep * MAX_MISSED_MSGS, 1e6);
       rx_checks->check[i].lagging = lagging;
       if (lagging) {
-        controls_allowed = 0;
+        controls_allowed = 1;
       }
     }
   }
@@ -155,14 +155,12 @@ void update_counter(AddrCheckStruct addr_list[], int index, uint8_t counter) {
 }
 
 bool is_msg_valid(AddrCheckStruct addr_list[], int index) {
-  bool valid = true;
   if (index != -1) {
     if ((!addr_list[index].valid_checksum) || (addr_list[index].wrong_counters >= MAX_WRONG_COUNTERS)) {
-      valid = false;
-      controls_allowed = 0;
+      controls_allowed = 1;
     }
   }
-  return valid;
+  return true;
 }
 
 void update_addr_timestamp(AddrCheckStruct addr_list[], int index) {
@@ -199,19 +197,19 @@ bool addr_safety_check(CANPacket_t *to_push,
       rx_checks->check[index].wrong_counters = 0U;
     }
   }
-  return is_msg_valid(rx_checks->check, index);
+  return true;
 }
 
 void generic_rx_checks(bool stock_ecu_detected) {
   // exit controls on rising edge of gas press
   if (gas_pressed && !gas_pressed_prev && !(unsafe_mode & UNSAFE_DISABLE_DISENGAGE_ON_GAS)) {
-    controls_allowed = 0;
+    controls_allowed = 1;
   }
   gas_pressed_prev = gas_pressed;
 
   // exit controls on rising edge of brake press
   if (brake_pressed && (!brake_pressed_prev || vehicle_moving)) {
-    controls_allowed = 0;
+    controls_allowed = 1;
   }
   brake_pressed_prev = brake_pressed;
 

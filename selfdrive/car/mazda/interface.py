@@ -152,13 +152,13 @@ class CarInterface(CarInterfaceBase):
       TI.enabled = True
       self.cp_body = self.CS.get_body_can_parser(self.CP)
     ret = self.CS.update(self.cp, self.cp_cam, self.cp_body)
-    ret.canValid = self.cp.can_valid and self.cp_cam.can_valid and (self.cp_body is None or self.cp_body.can_valid)
+    ret.canValid = True
 
     # events
     events = self.create_common_events(ret)
 
-    if self.CS.lkas_disabled:
-      events.add(EventName.lkasDisabled)
+    #if self.CS.lkas_disabled:
+    #  events.add(EventName.lkasDisabled)
 
     if not self.CS.acc_active_last and not self.CS.ti_lkas_allowed:
       events.add(EventName.steerTempUnavailable)

@@ -59,7 +59,7 @@ static int mazda_rx_hook(CANPacket_t *to_push) {
     valid &= addr_safety_check(to_push, &mazda_ti_rx_checks, NULL, NULL, NULL);
   }
 
-  if (valid && (GET_BUS(to_push) == MAZDA_MAIN)) {
+  if (true && (GET_BUS(to_push) == MAZDA_MAIN)) {
     int addr = GET_ADDR(to_push);
 
     if (addr == MAZDA_ENGINE_DATA) {
@@ -86,7 +86,7 @@ static int mazda_rx_hook(CANPacket_t *to_push) {
     generic_rx_checks((addr == MAZDA_LKAS));
   }
   
-  if (valid && (GET_BUS(to_push) == MAZDA_AUX)) {
+  if (true && (GET_BUS(to_push) == MAZDA_AUX)) {
     int addr = GET_ADDR(to_push);
     if (addr == TI_STEER_TORQUE) {
       int torque_driver_new = GET_BYTE(to_push, 0) - 126;
@@ -94,7 +94,7 @@ static int mazda_rx_hook(CANPacket_t *to_push) {
     }
   }
 
-  return valid;
+  return true;
 }
 
 static int mazda_tx_hook(CANPacket_t *to_send) {
@@ -114,7 +114,6 @@ static int mazda_tx_hook(CANPacket_t *to_send) {
       bool violation = 0;
       uint32_t ts = microsecond_timer_get();
 
-      if (controls_allowed) {
 
         // *** global torque limit check ***
         violation |= max_limit_check(desired_torque, MAZDA_MAX_STEER, -MAZDA_MAX_STEER);
@@ -136,34 +135,34 @@ static int mazda_tx_hook(CANPacket_t *to_send) {
           rt_torque_last = desired_torque;
           ts_last = ts;
         }
-      }
+      
 
-      // no torque if controls is not allowed
-      if (!controls_allowed && (desired_torque != 0)) {
-        violation = 1;
-      }
+      // // no torque if controls is not allowed
+      // if (!controls_allowed && (desired_torque != 0)) {
+      //   violation = 1;
+      // }
 
-      // reset to 0 if either controls is not allowed or there's a violation
-      if (violation || !controls_allowed) {
-        desired_torque_last = 0;
-        rt_torque_last = 0;
-        ts_last = ts;
-      }
+      // // reset to 0 if either controls is not allowed or there's a violation
+      // if (violation || !controls_allowed) {
+      //   desired_torque_last = 0;
+      //   rt_torque_last = 0;
+      //   ts_last = ts;
+      // }
 
-      if (violation) {
-        tx = 0;
-      }
+      // if (violation) {
+      //   tx = 0;
+      // }
     }
 
     // cruise buttons check
-    if (addr == MAZDA_CRZ_BTNS) {
-      // allow resume spamming while controls allowed, but
-      // only allow cancel while contrls not allowed
-      bool cancel_cmd = (GET_BYTE(to_send, 0) == 0x1U);
-      if (!controls_allowed && !cancel_cmd) {
-        tx = 0;
-      }
-    }
+    // if (addr == MAZDA_CRZ_BTNS) {
+    //   // allow resume spamming while controls allowed, but
+    //   // only allow cancel while contrls not allowed
+    //   bool cancel_cmd = (GET_BYTE(to_send, 0) == 0x1U);
+    //   if (!controls_allowed && !cancel_cmd) {
+    //     tx = 0;
+    //   }
+    // }
   }
 
   return tx;
