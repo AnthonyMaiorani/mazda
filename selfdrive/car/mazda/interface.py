@@ -160,8 +160,8 @@ class CarInterface(CarInterfaceBase):
     #if self.CS.lkas_disabled:
     #  events.add(EventName.lkasDisabled)
 
-    if not self.CS.acc_active_last and not self.CS.ti_lkas_allowed:
-      events.add(EventName.steerTempUnavailable)
+    #if not self.CS.acc_active_last and not self.CS.ti_lkas_allowed:
+    #  events.add(EventName.steerTempUnavailable)
 
     ret.events = events.to_msg()
 

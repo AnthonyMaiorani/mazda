@@ -143,15 +143,15 @@ class CarInterfaceBase(ABC):
 
     # Handle permanent and temporary steering faults
     self.steering_unpressed = 0 if cs_out.steeringPressed else self.steering_unpressed + 1
-    if cs_out.steerWarning:
+    #if cs_out.steerWarning:
       # if the user overrode recently, show a less harsh alert
-      if self.silent_steer_warning or cs_out.standstill or self.steering_unpressed < int(1.5 / DT_CTRL):
-        self.silent_steer_warning = True
-        events.add(EventName.steerTempUnavailableSilent)
-      else:
-        events.add(EventName.steerTempUnavailable)
-    else:
-      self.silent_steer_warning = False
+    #  if self.silent_steer_warning or cs_out.standstill or self.steering_unpressed < int(1.5 / DT_CTRL):
+    #    self.silent_steer_warning = True
+    #    events.add(EventName.steerTempUnavailableSilent)
+    #  else:
+    #    events.add(EventName.steerTempUnavailable)
+    #else:
+    #  self.silent_steer_warning = False
     #if cs_out.steerError:
     #  events.add(EventName.steerUnavailable)
 

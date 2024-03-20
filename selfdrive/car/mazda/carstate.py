@@ -99,11 +99,7 @@ class CarState(CarStateBase):
     ret.cruiseState.enabled = cp.vl["PEDALS"]["ACC_ACTIVE"] == 1
     ret.cruiseState.speed = cp.vl["CRZ_EVENTS"]["CRZ_SPEED"] * CV.KPH_TO_MS
 
-    # On if no driver torque the last 5 seconds
-    if self.CP.carFingerprint not in (CAR.CX5_2022, CAR.CX9_2021): 
-      ret.steerWarning = cp.vl["STEER_RATE"]["HANDS_OFF_5_SECONDS"] == 1
-    else:
-      ret.steerWarning = False
+    ret.steerWarning = False
 
     self.acc_active_last = ret.cruiseState.enabled
 
