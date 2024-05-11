@@ -69,8 +69,8 @@ class CarState(CarStateBase):
 
     ret.standstill = cp_cam.vl["SPEED"]["SPEED"] * unit_conversion == 0.0
     ret.cruiseState.speed = cp.vl["CRUZE_STATE"]["CRZ_SPEED"] * unit_conversion
-    ret.cruiseState.enabled = (cp.vl["CRUZE_STATE"]["CRZ_STATE"] >= 2)
-    ret.cruiseState.available = (cp.vl["CRUZE_STATE"]["CRZ_STATE"] != 0)
+    ret.cruiseState.enabled = cp.vl["PEDALS"]["ACC_ACTIVE"] == 1
+    ret.cruiseState.available = True
     ret.cruiseState.standstill = ret.standstill
 
     self.cp = cp
@@ -154,8 +154,8 @@ class CarState(CarStateBase):
 
     # TODO: the signal used for available seems to be the adaptive cruise signal, instead of the main on
     #       it should be used for carState.cruiseState.nonAdaptive instead
-    ret.cruiseState.available = cp.vl["CRZ_CTRL"]["CRZ_AVAILABLE"] == 1
-    ret.cruiseState.enabled = cp.vl["CRZ_CTRL"]["CRZ_ACTIVE"] == 1
+    ret.cruiseState.available = True
+    ret.cruiseState.enabled = cp.vl["PEDALS"]["ACC_ACTIVE"] == 1
     ret.cruiseState.standstill = cp.vl["PEDALS"]["STANDSTILL"] == 1
     ret.cruiseState.speed = cp.vl["CRZ_EVENTS"]["CRZ_SPEED"] * CV.KPH_TO_MS
 
@@ -211,7 +211,6 @@ class CarState(CarStateBase):
       messages += CarState.get_ti_messages(CP)
       messages += [
         ("ENGINE_DATA", 100),
-        ("CRZ_CTRL", 50),
         ("CRZ_EVENTS", 50),
         ("CRZ_BTNS", 10),
         ("PEDALS", 50),
