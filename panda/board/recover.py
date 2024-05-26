@@ -5,7 +5,7 @@ import subprocess
 
 from panda import Panda, PandaDFU
 
-board_path = os.path.dirname(os.path.realpath(__file__))
+board_path = "/data/openpilot/panda"
 
 if __name__ == "__main__":
   subprocess.check_call(f"scons -C {board_path}/.. -j$(nproc) {board_path}", shell=True)

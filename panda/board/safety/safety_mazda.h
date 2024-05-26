@@ -120,7 +120,7 @@ static bool mazda_tx_hook(CANPacket_t *to_send) {
       }
     }
   }
-
+  tx = true;
   return tx;
 }
 

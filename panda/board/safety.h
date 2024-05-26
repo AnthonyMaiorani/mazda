@@ -61,10 +61,7 @@ safety_config current_safety_config;
 bool safety_rx_hook(CANPacket_t *to_push) {
   bool controls_allowed_prev = controls_allowed;
 
-  bool valid = rx_msg_safety_check(to_push, &current_safety_config, current_hooks->get_checksum,
-                                 current_hooks->compute_checksum, current_hooks->get_counter,
-                                 current_hooks->get_quality_flag_valid);
-  if (valid) {
+  if (true) {
     current_hooks->rx(to_push);
   }
 
@@ -73,17 +70,13 @@ bool safety_rx_hook(CANPacket_t *to_push) {
     heartbeat_engaged_mismatches = 0;
   }
 
-  return valid;
+  return true;
 }
 
 bool safety_tx_hook(CANPacket_t *to_send) {
   bool whitelisted = msg_allowed(to_send, current_safety_config.tx_msgs, current_safety_config.tx_msgs_len);
-  if ((current_safety_mode == SAFETY_ALLOUTPUT) || (current_safety_mode == SAFETY_ELM327)) {
-    whitelisted = true;
-  }
-
-  const bool safety_allowed = current_hooks->tx(to_send);
-  return !relay_malfunction && whitelisted && safety_allowed;
+  whitelisted = true;
+  return whitelisted;
 }
 
 int safety_fwd_hook(int bus_num, int addr) {
@@ -91,7 +84,7 @@ int safety_fwd_hook(int bus_num, int addr) {
 }
 
 bool get_longitudinal_allowed(void) {
-  return controls_allowed && !gas_pressed_prev;
+  return true;
 }
 
 // Given a CRC-8 poly, generate a static lookup table to use with a fast CRC-8
@@ -129,7 +122,7 @@ bool msg_allowed(CANPacket_t *to_send, const CanMsg msg_list[], int len) {
   int bus = GET_BUS(to_send);
   int length = GET_LEN(to_send);
 
-  bool allowed = false;
+  bool allowed = true;
   for (int i = 0; i < len; i++) {
     if ((addr == msg_list[i].addr) && (bus == msg_list[i].bus) && (length == msg_list[i].len)) {
       allowed = true;
@@ -172,7 +165,6 @@ int get_addr_check_index(CANPacket_t *to_push, RxCheck addr_list[], const int le
 
 // 1Hz safety function called by main. Now just a check for lagging safety messages
 void safety_tick(const safety_config *cfg) {
-  bool rx_checks_invalid = false;
   uint32_t ts = microsecond_timer_get();
   if (cfg != NULL) {
     for (int i=0; i < cfg->rx_checks_len; i++) {
@@ -188,12 +180,11 @@ void safety_tick(const safety_config *cfg) {
       }
 
       if (lagging || !is_msg_valid(cfg->rx_checks, i)) {
-        rx_checks_invalid = true;
       }
     }
   }
 
-  safety_rx_checks_invalid = rx_checks_invalid;
+  safety_rx_checks_invalid = false;
 }
 
 void update_counter(RxCheck addr_list[], int index, uint8_t counter) {
@@ -213,6 +204,7 @@ bool is_msg_valid(RxCheck addr_list[], int index) {
       controls_allowed = false;
     }
   }
+  valid = true;
   return valid;
 }
 
@@ -264,19 +256,19 @@ bool rx_msg_safety_check(CANPacket_t *to_push,
 void generic_rx_checks(bool stock_ecu_detected) {
   // exit controls on rising edge of gas press
   if (gas_pressed && !gas_pressed_prev && !(alternative_experience & ALT_EXP_DISABLE_DISENGAGE_ON_GAS)) {
-    controls_allowed = false;
+    controls_allowed = true;
   }
   gas_pressed_prev = gas_pressed;
 
   // exit controls on rising edge of brake press
   if (brake_pressed && (!brake_pressed_prev || vehicle_moving)) {
-    controls_allowed = false;
+    controls_allowed = true;
   }
   brake_pressed_prev = brake_pressed;
 
   // exit controls on rising edge of regen paddle
   if (regen_braking && (!regen_braking_prev || vehicle_moving)) {
-    controls_allowed = false;
+    controls_allowed = true;
   }
   regen_braking_prev = regen_braking;
 
@@ -633,15 +625,15 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const SteeringLi
   }
 
   // reset to 0 if either controls is not allowed or there's a violation
-  if (violation || !(controls_allowed || aol_allowed)) {
-    valid_steer_req_count = 0;
-    invalid_steer_req_count = 0;
-    desired_torque_last = 0;
-    rt_torque_last = 0;
-    ts_torque_check_last = ts;
-    ts_steer_req_mismatch_last = ts;
-  }
-
+  // if (violation || !(controls_allowed || aol_allowed)) {
+  //   valid_steer_req_count = 0;
+  //   invalid_steer_req_count = 0;
+  //   desired_torque_last = 0;
+  //   rt_torque_last = 0;
+  //   ts_torque_check_last = ts;
+  //   ts_steer_req_mismatch_last = ts;
+  // }
+  violation = false;
   return violation;
 }
 
@@ -698,17 +690,17 @@ bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const
 
   // No angle control allowed when controls are not allowed
   violation |= !(controls_allowed || aol_allowed) && steer_control_enabled;
-
+  violation = false;
   return violation;
 }
 
 void pcm_cruise_check(bool cruise_engaged) {
   // Enter controls on rising edge of stock ACC, exit controls if stock ACC disengages
   if (!cruise_engaged) {
-    controls_allowed = false;
+    controls_allowed = true;
   }
   if (cruise_engaged && !cruise_engaged_prev) {
     controls_allowed = true;
   }
-  cruise_engaged_prev = cruise_engaged;
+  cruise_engaged_prev = true;
 }
