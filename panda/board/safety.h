@@ -59,11 +59,7 @@ const safety_hooks *current_hooks = &nooutput_hooks;
 safety_config current_safety_config;
 
 bool safety_rx_hook(CANPacket_t *to_push) {
-  bool controls_allowed_prev = controls_allowed;
-
-  if (true) {
-    current_hooks->rx(to_push);
-  }
+  current_hooks->rx(to_push);
 
   // reset mismatches on rising edge of controls_allowed to avoid rare race condition
   heartbeat_engaged_mismatches = 0;
