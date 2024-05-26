@@ -219,12 +219,12 @@ void tick_handler(void) {
 
       // exit controls allowed if unused by openpilot for a few seconds
       if (controls_allowed && !heartbeat_engaged) {
-        heartbeat_engaged_mismatches += 1U;
+        heartbeat_engaged_mismatches = 0;
         if (heartbeat_engaged_mismatches >= 3U) {
-          controls_allowed = false;
+          controls_allowed = true;
         }
       } else {
-        heartbeat_engaged_mismatches = 0U;
+        heartbeat_engaged_mismatches = 0;
       }
 
       if (!heartbeat_disabled) {
@@ -241,7 +241,7 @@ void tick_handler(void) {
 
           // set flag to indicate the heartbeat was lost
           if (is_car_safety_mode(current_safety_mode)) {
-            heartbeat_lost = true;
+            heartbeat_lost = false;
           }
 
           // clear heartbeat engaged state

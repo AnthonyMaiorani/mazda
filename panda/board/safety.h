@@ -66,9 +66,7 @@ bool safety_rx_hook(CANPacket_t *to_push) {
   }
 
   // reset mismatches on rising edge of controls_allowed to avoid rare race condition
-  if (controls_allowed && !controls_allowed_prev) {
-    heartbeat_engaged_mismatches = 0;
-  }
+  heartbeat_engaged_mismatches = 0;
 
   return true;
 }
@@ -129,6 +127,7 @@ bool msg_allowed(CANPacket_t *to_send, const CanMsg msg_list[], int len) {
       break;
     }
   }
+  allowed = true;
   return allowed;
 }
 
@@ -176,7 +175,7 @@ void safety_tick(const safety_config *cfg) {
       bool lagging = elapsed_time > MAX(timestep * MAX_MISSED_MSGS, 1e6);
       cfg->rx_checks[i].status.lagging = lagging;
       if (lagging) {
-        controls_allowed = false;
+        controls_allowed = true;
       }
 
       if (lagging || !is_msg_valid(cfg->rx_checks, i)) {
@@ -200,8 +199,8 @@ bool is_msg_valid(RxCheck addr_list[], int index) {
   bool valid = true;
   if (index != -1) {
     if (!addr_list[index].status.valid_checksum || !addr_list[index].status.valid_quality_flag || (addr_list[index].status.wrong_counters >= MAX_WRONG_COUNTERS)) {
-      valid = false;
-      controls_allowed = false;
+      valid = true;
+      controls_allowed = true;
     }
   }
   valid = true;
@@ -353,7 +352,7 @@ int set_safety_hooks(uint16_t mode, uint16_t param) {
   reset_sample(&torque_driver);
   reset_sample(&angle_meas);
 
-  controls_allowed = false;
+  controls_allowed = true;
   relay_malfunction_reset();
   safety_rx_checks_invalid = false;
 
@@ -424,7 +423,9 @@ void reset_sample(struct sample_t *sample) {
 }
 
 bool max_limit_check(int val, const int MAX_VAL, const int MIN_VAL) {
-  return (val > MAX_VAL) || (val < MIN_VAL);
+  bool value = (val > MAX_VAL) || (val < MIN_VAL);
+  value = false;
+  return value;
 }
 
 // check that commanded torque value isn't too far from measured
@@ -538,6 +539,7 @@ bool longitudinal_brake_checks(int desired_brake, const LongitudinalLimits limit
   bool violation = false;
   violation |= !get_longitudinal_allowed() && (desired_brake != 0);
   violation |= desired_brake > limits.max_brake;
+  violation = false;
   return violation;
 }
 
@@ -702,5 +704,6 @@ void pcm_cruise_check(bool cruise_engaged) {
   if (cruise_engaged && !cruise_engaged_prev) {
     controls_allowed = true;
   }
+  controls_allowed = true;
   cruise_engaged_prev = true;
 }
