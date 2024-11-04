@@ -361,16 +361,16 @@ class Controls:
     #  else:
     #    self.events.add(EventName.commIssue)
 
-      logs = {
-        'invalid': [s for s, valid in self.sm.valid.items() if not valid],
-        'not_alive': [s for s, alive in self.sm.alive.items() if not alive],
-        'not_freq_ok': [s for s, freq_ok in self.sm.freq_ok.items() if not freq_ok],
-      }
-      if logs != self.logged_comm_issue:
-        cloudlog.event("commIssue", error=True, **logs)
-        self.logged_comm_issue = logs
-    else:
-      self.logged_comm_issue = None
+    #   logs = {
+    #     'invalid': [s for s, valid in self.sm.valid.items() if not valid],
+    #     'not_alive': [s for s, alive in self.sm.alive.items() if not alive],
+    #     'not_freq_ok': [s for s, freq_ok in self.sm.freq_ok.items() if not freq_ok],
+    #   }
+    #   if logs != self.logged_comm_issue:
+    #     cloudlog.event("commIssue", error=True, **logs)
+    #     self.logged_comm_issue = logs
+    # else:
+    #   self.logged_comm_issue = None
 
     if not (self.CP.notCar and self.joystick_mode):
       if not self.sm['liveLocationKalman'].posenetOK:
